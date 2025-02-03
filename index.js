@@ -1,20 +1,25 @@
 const express = require("express");
 const app = express();
 
-app.get("/track-pixel", (req, res) => {
+app.get("/track-pixel", async (req, res) => {
   const forwarded = req.headers["x-forwarded-for"];
   const ip = forwarded || req.socket.remoteAddress;
+  console.log("IP Address: ", ip);
 
-  // Log the real IP (handle IPv6 cases)
-  console.log(`IP: ${ip}`);
+  try {
+    const response = await axios.get(`http://ip-api.com/json/${ip}`);
+    const { lat, lon, city, country } = response.data;
+
+    console.log(`Location: ${lat}, ${lon}, City: ${city}, Country: ${country}`);
+  } catch (error) {
+    console.error("Error fetching geolocation data", error);
+  }
 
   res.setHeader("Content-Type", "image/png");
   res.status(200).end(Buffer.alloc(0));
 });
 
-
 app.get("/", (req, res) => {
-  
   res.status(200).send("Hello World");
 });
 
